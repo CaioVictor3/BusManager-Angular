@@ -1,0 +1,63 @@
+<div class="row" *ngIf="students.length > 0; else emptyState">
+  <div class="col-12 col-md-6 col-lg-4 mb-3" *ngFor="let student of students">
+    <div class="card" [ngClass]="getStudentCardClass(student)" [attr.data-student-id]="student.id">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <h6 class="card-title mb-0">{{ student.name }}</h6>
+          <div class="d-flex align-items-center gap-2">
+            <span [ngClass]="getStatusIndicatorClass(student)"></span>
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="#" (click)="editStudent(student.id); $event.preventDefault()">
+                    <i class="fas fa-edit me-2"></i>Editar
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item text-danger" href="#" (click)="deleteStudent(student.id); $event.preventDefault()">
+                    <i class="fas fa-trash me-2"></i>Excluir
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <p class="card-text small text-muted mb-2">
+          <i class="fas fa-phone me-1"></i>{{ student.phone }}
+        </p>
+        <p class="card-text small mb-3">
+          <i class="fas fa-map-marker-alt me-1"></i>
+          {{ student.address }}, {{ student.number }}<br>
+          <small class="text-muted">{{ student.neighborhood }} - {{ student.city }}/{{ student.state }}</small>
+        </p>
+        <div class="d-flex gap-2">
+          <button 
+            [ngClass]="getPresenceButtonClass(student, true)"
+            [class]="getPresenceButtonClassVariant(student, true)"
+            (click)="toggleStudentPresence(student.id, true)">
+            <i [ngClass]="getPresenceButtonIcon(true)" class="me-1"></i>{{ getPresenceButtonText(true) }}
+          </button>
+          <button 
+            [ngClass]="getPresenceButtonClass(student, false)"
+            [class]="getPresenceButtonClassVariant(student, false)"
+            (click)="toggleStudentPresence(student.id, false)">
+            <i [ngClass]="getPresenceButtonIcon(false)" class="me-1"></i>{{ getPresenceButtonText(false) }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #emptyState>
+  <div class="col-12">
+    <div class="empty-state">
+      <i class="fas fa-user-plus"></i>
+      <h5>Nenhum aluno cadastrado</h5>
+      <p>Clique em "Novo Aluno" para começar</p>
+    </div>
+  </div>
+</ng-template>

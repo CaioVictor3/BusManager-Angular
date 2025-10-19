@@ -1,0 +1,65 @@
+/* Estilos específicos das notificações toast */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1055;
+  max-width: 350px;
+}
+
+.toast {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  margin-bottom: 0.5rem;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.toast-body {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.toast-body i {
+  font-size: 1rem;
+}
+
+.btn-close {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* Animações */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsividade */
+@media (max-width: 576px) {
+  .toast-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+  
+  .toast {
+    margin-bottom: 0.25rem;
+  }
+  
+  .toast-body {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}

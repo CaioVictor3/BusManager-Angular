@@ -1,0 +1,123 @@
+/* Estilos específicos do modal de visualização de rota */
+.modal-content {
+  border-radius: 15px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 15px 15px 0 0;
+}
+
+.modal-footer {
+  border-top: 1px solid #e9ecef;
+  border-radius: 0 0 15px 15px;
+}
+
+/* Mapa */
+#map {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Lista de rota */
+.route-order {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.route-order li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.route-order li:last-child {
+  border-bottom: none;
+}
+
+/* Informações da rota */
+.route-info {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.route-info h6 {
+  color: #1976d2;
+  margin-bottom: 0.5rem;
+}
+
+.route-info p {
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+/* Botões personalizados */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Loading spinner */
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Badges */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 768px) {
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+  
+  #map {
+    height: 300px !important;
+  }
+  
+  .modal-footer .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+    margin: 0;
+  }
+  
+  .route-order {
+    max-height: 150px;
+  }
+}

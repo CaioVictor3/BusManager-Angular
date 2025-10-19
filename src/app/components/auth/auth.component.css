@@ -1,0 +1,63 @@
+/* Estilos específicos do componente de autenticação */
+.card {
+  border: none;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.nav-tabs .nav-link {
+  border-radius: 8px 8px 0 0;
+  border: none;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: #007bff;
+  color: white;
+  border: none;
+}
+
+.nav-tabs .nav-link:hover {
+  border: none;
+  background-color: #e9ecef;
+}
+
+.nav-tabs .nav-link.active:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 0.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}

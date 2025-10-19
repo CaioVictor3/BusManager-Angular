@@ -1,0 +1,122 @@
+<div class="container-fluid vh-100">
+  <!-- Header -->
+  <nav class="navbar navbar-dark bg-primary">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">
+        <i class="fas fa-bus me-2"></i>Bus Manager
+      </span>
+      <button class="btn btn-outline-light" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <div class="container-fluid p-3">
+    <!-- Informações do Topiqueiro -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="fas fa-user me-2"></i>Topiqueiro
+            </h5>
+            <p class="card-text mb-1">{{ getDriverInfo() }}</p>
+            <small class="text-muted">{{ getVehicleInfo() }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Configuração de Rotas -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-route me-2"></i>Configuração de Rotas
+            </h5>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary btn-sm" (click)="openStartPointModal()">
+                <i class="fas fa-play me-1"></i>Ponto de Partida
+              </button>
+              <button class="btn btn-outline-success btn-sm" (click)="openEndPointModal()">
+                <i class="fas fa-flag-checkered me-1"></i>Ponto de Chegada
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-play text-primary me-2"></i>
+                  <div>
+                    <strong>Ponto de Partida:</strong>
+                    <div [class]="getStartPointClass()">{{ getStartPointDisplay() }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-flag-checkered text-success me-2"></i>
+                  <div>
+                    <strong>Ponto de Chegada:</strong>
+                    <div [class]="getEndPointClass()">{{ getEndPointDisplay() }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cadastro de Alunos -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-users me-2"></i>Alunos Cadastrados
+            </h5>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#studentModal">
+              <i class="fas fa-plus me-1"></i>Novo Aluno
+            </button>
+          </div>
+          <div class="card-body">
+            <app-student-list></app-student-list>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles de Rota -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center">
+            <button 
+              class="btn btn-success btn-lg" 
+              [disabled]="!canStartRoute"
+              (click)="startRoute()">
+              <i class="fas fa-play me-2"></i>Iniciar Rota
+            </button>
+            <button 
+              class="btn btn-info btn-lg ms-2" 
+              [disabled]="!canViewRoute"
+              (click)="viewRoute()">
+              <i class="fas fa-map me-2"></i>Ver Rota
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modais serão incluídos pelos componentes filhos -->
+<app-student-modal></app-student-modal>
+<app-route-point-modal #startPointModal type="start"></app-route-point-modal>
+<app-route-point-modal #endPointModal type="end"></app-route-point-modal>
+<app-route-view-modal></app-route-view-modal>
+<app-notification-toast></app-notification-toast>

@@ -1,0 +1,101 @@
+<!-- Modal de Ponto de Rota -->
+<div class="modal fade" [id]="getModalId()" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" [innerHTML]="getModalTitle()"></h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label [for]="getCepFieldId()" class="form-label">CEP</label>
+            <div class="input-group">
+              <input 
+                type="text" 
+                class="form-control" 
+                [id]="getCepFieldId()" 
+                [(ngModel)]="formData.cep"
+                [name]="getCepFieldId()"
+                maxlength="9" 
+                placeholder="00000-000"
+                (input)="formatCep($event)">
+              <button 
+                class="btn btn-outline-secondary" 
+                type="button" 
+                [id]="getSearchCepButtonId()"
+                [disabled]="isSearchingCep"
+                (click)="searchCep()">
+                <i [class]="isSearchingCep ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
+              </button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label [for]="getAddressFieldId()" class="form-label">Endereço</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [id]="getAddressFieldId()" 
+              [(ngModel)]="formData.address"
+              [name]="getAddressFieldId()"
+              [placeholder]="type === 'start' ? 'Rua, Avenida, etc.' : 'Ex: Faculdade XYZ'">
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label [for]="getNumberFieldId()" class="form-label">Número</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [id]="getNumberFieldId()" 
+                [(ngModel)]="formData.number"
+                [name]="getNumberFieldId()"
+                placeholder="123">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label [for]="getNeighborhoodFieldId()" class="form-label">Bairro</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [id]="getNeighborhoodFieldId()" 
+                [(ngModel)]="formData.neighborhood"
+                [name]="getNeighborhoodFieldId()"
+                placeholder="Centro">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <label [for]="getCityFieldId()" class="form-label">Cidade</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [id]="getCityFieldId()" 
+                [(ngModel)]="formData.city"
+                [name]="getCityFieldId()"
+                placeholder="São Paulo">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label [for]="getStateFieldId()" class="form-label">Estado</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [id]="getStateFieldId()" 
+                [(ngModel)]="formData.state"
+                [name]="getStateFieldId()"
+                placeholder="SP">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button 
+          type="button" 
+          [class]="getSaveButtonClass()" 
+          [disabled]="!isFormValid()"
+          (click)="savePoint()"
+          [innerHTML]="getSaveButtonText()">
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+<!-- Container de Notificações Toast -->
+<div class="toast-container">
+  <div 
+    *ngFor="let notification of notifications" 
+    [id]="notification.id"
+    [class]="getNotificationClass(notification)"
+    role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i [class]="getNotificationIcon(notification.type)" class="me-2"></i>
+        {{ notification.message }}
+      </div>
+      <button 
+        type="button" 
+        class="btn-close btn-close-white me-2 m-auto" 
+        (click)="removeNotification(notification.id)">
+      </button>
+    </div>
+  </div>
+</div>

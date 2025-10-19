@@ -1,0 +1,78 @@
+/* Estilos específicos do modal de aluno */
+.modal-content {
+  border-radius: 15px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 15px 15px 0 0;
+}
+
+.modal-footer {
+  border-top: 1px solid #e9ecef;
+  border-radius: 0 0 15px 15px;
+}
+
+/* Formulários */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Botões personalizados */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Input group */
+.input-group .btn {
+  border-color: #ced4da;
+}
+
+.input-group .btn:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* CEP validation */
+.cep-valid {
+  border-color: #28a745 !important;
+  background-color: #d4edda;
+}
+
+.cep-invalid {
+  border-color: #dc3545 !important;
+  background-color: #f8d7da;
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 480px) {
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .form-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .form-control {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
