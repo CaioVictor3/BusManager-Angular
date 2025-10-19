@@ -43,8 +43,9 @@
               <button 
                 class="btn btn-outline-secondary" 
                 type="button" 
+                [disabled]="isSearchingCep"
                 (click)="searchCep()">
-                <i class="fas fa-search"></i>
+                <i [class]="isSearchingCep ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
               </button>
             </div>
           </div>

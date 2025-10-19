@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Student, StudentFormData, CepResponse } from '../models/student.model';
 import { StorageService } from './storage.service';
+import { CepService, CepData } from './cep.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,10 @@ export class StudentService {
   private studentsSubject = new BehaviorSubject<Student[]>([]);
   public students$ = this.studentsSubject.asObservable();
 
-  constructor(private storageService: StorageService) {
+  constructor(
+    private storageService: StorageService,
+    private cepService: CepService
+  ) {
     // Carregar alunos salvos
     const savedStudents = this.storageService.getStudents();
     this.studentsSubject.next(savedStudents);
@@ -86,21 +90,28 @@ export class StudentService {
   }
 
   async searchCep(cep: string): Promise<CepResponse | null> {
-    const cleanCep = cep.replace(/\D/g, '');
-    
-    if (cleanCep.length !== 8) {
-      throw new Error('CEP deve ter 8 dígitos!');
-    }
-
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-      const data: CepResponse = await response.json();
-
-      if (data.erro) {
-        throw new Error('CEP não encontrado!');
+      const cepData = await this.cepService.searchCep(cep);
+      if (!cepData) {
+        return null;
       }
 
-      return data;
+      // Converter CepData para CepResponse
+      const cepResponse: CepResponse = {
+        cep: cepData.cep,
+        logradouro: cepData.logradouro,
+        complemento: cepData.complemento,
+        bairro: cepData.bairro,
+        localidade: cepData.localidade,
+        uf: cepData.uf,
+        ibge: cepData.ibge,
+        gia: cepData.gia,
+        ddd: cepData.ddd,
+        siafi: cepData.siafi,
+        erro: cepData.erro
+      };
+
+      return cepResponse;
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
       throw error;
@@ -108,8 +119,7 @@ export class StudentService {
   }
 
   formatCep(cep: string): string {
-    const cleanCep = cep.replace(/\D/g, '');
-    return cleanCep.replace(/(\d{5})(\d)/, '$1-$2');
+    return this.cepService.formatCep(cep);
   }
 
   buildFullAddress(student: Student): string {

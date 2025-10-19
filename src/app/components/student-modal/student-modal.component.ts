@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { StudentService } from '../../services/student.service';
 import { NotificationService } from '../../services/notification.service';
+import { CepService } from '../../services/cep.service';
 import { Student, StudentFormData, CepResponse } from '../../models/student.model';
 
 declare var bootstrap: any;
@@ -18,9 +19,11 @@ declare var bootstrap: any;
 export class StudentModalComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private modal: any;
+  private cepSearchSubject = new Subject<string>();
   
   isEditing = false;
   editingStudentId: number | null = null;
+  isSearchingCep = false;
   
   formData: StudentFormData = {
     name: '',
@@ -37,6 +40,7 @@ export class StudentModalComponent implements OnInit, OnDestroy {
   constructor(
     private studentService: StudentService,
     private notificationService: NotificationService,
+    private cepService: CepService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -48,6 +52,24 @@ export class StudentModalComponent implements OnInit, OnDestroy {
         this.modal = new bootstrap.Modal(modalElement);
       }
     }
+
+    // Configurar busca automática de CEP com debounce
+    this.cepSearchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(cep => {
+      if (cep && cep.length === 8) {
+        this.autoSearchCep(cep);
+      }
+    });
+
+    // Observar estado de loading do CEP
+    this.cepService.loading$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(loading => {
+      this.isSearchingCep = loading;
+    });
   }
 
   ngOnDestroy(): void {
@@ -123,6 +145,28 @@ export class StudentModalComponent implements OnInit, OnDestroy {
   formatCep(event: any): void {
     const value = event.target.value;
     this.formData.cep = this.studentService.formatCep(value);
+    
+    // Disparar busca automática se CEP estiver completo
+    const cleanCep = value.replace(/\D/g, '');
+    if (cleanCep.length === 8) {
+      this.cepSearchSubject.next(cleanCep);
+    }
+  }
+
+  private async autoSearchCep(cep: string): Promise<void> {
+    try {
+      const cepData = await this.studentService.searchCep(cep);
+      if (cepData) {
+        this.formData.address = cepData.logradouro;
+        this.formData.neighborhood = cepData.bairro;
+        this.formData.city = cepData.localidade;
+        this.formData.state = cepData.uf;
+        this.notificationService.showToast('Endereço encontrado automaticamente!', 'success');
+      }
+    } catch (error: any) {
+      // Não mostrar erro para busca automática, apenas para busca manual
+      console.warn('Erro na busca automática de CEP:', error);
+    }
   }
 
   saveStudent(): void {
