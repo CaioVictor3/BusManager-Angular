@@ -1,4 +1,3 @@
-<!-- Modal de Ponto de Rota -->
 <div class="modal fade" [id]="getModalId()" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -7,93 +6,51 @@
         <button type="button" class="btn-close" (click)="closeModal()"></button>
       </div>
       <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label [for]="getCepFieldId()" class="form-label">CEP</label>
-            <div class="input-group">
-              <input 
-                type="text" 
-                class="form-control" 
-                [id]="getCepFieldId()" 
-                [(ngModel)]="formData.cep"
-                [name]="getCepFieldId()"
-                maxlength="9" 
-                placeholder="00000-000"
-                (input)="formatCep($event)">
-              <button 
-                class="btn btn-outline-secondary" 
-                type="button" 
-                [id]="getSearchCepButtonId()"
-                [disabled]="isSearchingCep"
-                (click)="searchCep()">
-                <i [class]="isSearchingCep ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
-              </button>
+        <form #routePointForm="ngForm" (ngSubmit)="savePoint()">
+          <fieldset [disabled]="isSearchingCep">
+            <div class="mb-3">
+              <label [for]="'cep' + type" class="form-label">CEP</label>
+              <div class="input-group">
+                <input type="text" class="form-control" [id]="'cep' + type" [(ngModel)]="formData.cep" name="cep"
+                       maxlength="9" (ngModelChange)="onCepChange($event)" required>
+                <span class="input-group-text" *ngIf="isSearchingCep">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </span>
+              </div>
             </div>
-          </div>
-          <div class="mb-3">
-            <label [for]="getAddressFieldId()" class="form-label">Endereço</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              [id]="getAddressFieldId()" 
-              [(ngModel)]="formData.address"
-              [name]="getAddressFieldId()"
-              [placeholder]="type === 'start' ? 'Rua, Avenida, etc.' : 'Ex: Faculdade XYZ'">
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label [for]="getNumberFieldId()" class="form-label">Número</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                [id]="getNumberFieldId()" 
-                [(ngModel)]="formData.number"
-                [name]="getNumberFieldId()"
-                placeholder="123">
+            <div class="mb-3">
+              <label [for]="'address' + type" class="form-label">Endereço</label>
+              <input type="text" class="form-control" [id]="'address' + type" [(ngModel)]="formData.address" name="address" required>
             </div>
-            <div class="col-md-6 mb-3">
-              <label [for]="getNeighborhoodFieldId()" class="form-label">Bairro</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                [id]="getNeighborhoodFieldId()" 
-                [(ngModel)]="formData.neighborhood"
-                [name]="getNeighborhoodFieldId()"
-                placeholder="Centro">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label [for]="'number' + type" class="form-label">Número</label>
+                <input type="text" class="form-control" [id]="'number' + type" [(ngModel)]="formData.number" name="number" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label [for]="'neighborhood' + type" class="form-label">Bairro</label>
+                <input type="text" class="form-control" [id]="'neighborhood' + type" [(ngModel)]="formData.neighborhood" name="neighborhood" required>
+              </div>
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-8 mb-3">
-              <label [for]="getCityFieldId()" class="form-label">Cidade</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                [id]="getCityFieldId()" 
-                [(ngModel)]="formData.city"
-                [name]="getCityFieldId()"
-                placeholder="São Paulo">
+            <div class="row">
+              <div class="col-md-8 mb-3">
+                <label [for]="'city' + type" class="form-label">Cidade</label>
+                <input type="text" class="form-control" [id]="'city' + type" [(ngModel)]="formData.city" name="city" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label [for]="'state' + type" class="form-label">Estado</label>
+                <input type="text" class="form-control" [id]="'state' + type" [(ngModel)]="formData.state" name="state" required>
+              </div>
             </div>
-            <div class="col-md-4 mb-3">
-              <label [for]="getStateFieldId()" class="form-label">Estado</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                [id]="getStateFieldId()" 
-                [(ngModel)]="formData.state"
-                [name]="getStateFieldId()"
-                placeholder="SP">
-            </div>
-          </div>
+          </fieldset>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-        <button 
-          type="button" 
-          [class]="getSaveButtonClass()" 
-          [disabled]="!isFormValid()"
-          (click)="savePoint()"
-          [innerHTML]="getSaveButtonText()">
+        <button type="submit" class="btn" [ngClass]="{'btn-primary': type === 'start', 'btn-success': type === 'end'}"
+                (click)="savePoint()" [disabled]="!isFormValid() || isSearchingCep">
+          <i class="fas fa-save me-1"></i>
+          {{ type === 'start' ? 'Salvar Ponto de Partida' : 'Salvar Ponto de Chegada' }}
         </button>
       </div>
     </div>

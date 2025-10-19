@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { FormsModule, NgForm } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil, filter } from 'rxjs/operators';
 import { StudentService } from '../../services/student.service';
 import { NotificationService } from '../../services/notification.service';
-import { CepService } from '../../services/cep.service';
-import { Student, StudentFormData, CepResponse } from '../../models/student.model';
+import { CepService, CepData } from '../../services/cep.service';
+import { StudentFormData } from '../../models/student.model';
 
 declare var bootstrap: any;
 
@@ -19,7 +20,6 @@ declare var bootstrap: any;
 export class StudentModalComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private modal: any;
-  private cepSearchSubject = new Subject<string>();
   
   isEditing = false;
   editingStudentId: number | null = null;
@@ -40,12 +40,11 @@ export class StudentModalComponent implements OnInit, OnDestroy {
   constructor(
     private studentService: StudentService,
     private notificationService: NotificationService,
-    private cepService: CepService,
+    public cepService: CepService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
-    // Inicializar modal Bootstrap apenas no browser
     if (isPlatformBrowser(this.platformId)) {
       const modalElement = document.getElementById('studentModal');
       if (modalElement) {
@@ -53,23 +52,13 @@ export class StudentModalComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Configurar busca automática de CEP com debounce
-    this.cepSearchSubject.pipe(
-      debounceTime(500),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(cep => {
-      if (cep && cep.length === 8) {
-        this.autoSearchCep(cep);
-      }
-    });
+    this.cepService.loading$.pipe(takeUntil(this.destroy$))
+      .subscribe(loading => this.isSearchingCep = loading);
 
-    // Observar estado de loading do CEP
-    this.cepService.loading$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(loading => {
-      this.isSearchingCep = loading;
-    });
+    this.cepService.searchResult$.pipe(
+      takeUntil(this.destroy$),
+      filter((data): data is CepData => data !== null)
+    ).subscribe(data => this.handleCepData(data));
   }
 
   ngOnDestroy(): void {
@@ -82,8 +71,6 @@ export class StudentModalComponent implements OnInit, OnDestroy {
       this.editStudent(studentId);
     } else {
       this.resetForm();
-      this.isEditing = false;
-      this.editingStudentId = null;
     }
     this.modal?.show();
   }
@@ -91,18 +78,7 @@ export class StudentModalComponent implements OnInit, OnDestroy {
   private editStudent(studentId: number): void {
     const student = this.studentService.getStudentById(studentId);
     if (student) {
-      this.formData = {
-        name: student.name,
-        phone: student.phone,
-        cep: student.cep,
-        address: student.address,
-        number: student.number,
-        neighborhood: student.neighborhood,
-        city: student.city,
-        state: student.state,
-        returnAddress: student.returnAddress || ''
-      };
-      
+      this.formData = { ...student, returnAddress: student.returnAddress || '' };
       this.isEditing = true;
       this.editingStudentId = studentId;
     }
@@ -110,86 +86,44 @@ export class StudentModalComponent implements OnInit, OnDestroy {
 
   private resetForm(): void {
     this.formData = {
-      name: '',
-      phone: '',
-      cep: '',
-      address: '',
-      number: '',
-      neighborhood: '',
-      city: '',
-      state: '',
-      returnAddress: ''
+      name: '', phone: '', cep: '', address: '',
+      number: '', neighborhood: '', city: '', state: '', returnAddress: ''
     };
+    this.isEditing = false;
+    this.editingStudentId = null;
   }
 
-  async searchCep(): Promise<void> {
-    if (!this.formData.cep) {
-      this.notificationService.showToast('Digite um CEP!', 'error');
-      return;
-    }
-
-    try {
-      const cepData = await this.studentService.searchCep(this.formData.cep);
-      if (cepData) {
-        this.formData.address = cepData.logradouro;
-        this.formData.neighborhood = cepData.bairro;
-        this.formData.city = cepData.localidade;
-        this.formData.state = cepData.uf;
-        this.notificationService.showToast('Endereço encontrado!', 'success');
-      }
-    } catch (error: any) {
-      this.notificationService.showToast(error.message || 'Erro ao buscar CEP', 'error');
+  onCepChange(cep: string): void {
+    const cleanCep = cep.replace(/\D/g, '');
+    this.formData.cep = this.cepService.formatCep(cleanCep);
+    if (this.cepService.isValidCep(cleanCep)) {
+      this.cepService.searchCep(cleanCep);
     }
   }
 
-  formatCep(event: any): void {
-    const value = event.target.value;
-    this.formData.cep = this.studentService.formatCep(value);
-    
-    // Disparar busca automática se CEP estiver completo
-    const cleanCep = value.replace(/\D/g, '');
-    if (cleanCep.length === 8) {
-      this.cepSearchSubject.next(cleanCep);
-    }
+  private handleCepData(data: CepData): void {
+    this.formData.address = data.logradouro;
+    this.formData.neighborhood = data.bairro;
+    this.formData.city = data.localidade;
+    this.formData.state = data.uf;
+    this.notificationService.showToast('Endereço encontrado!', 'success');
   }
 
-  private async autoSearchCep(cep: string): Promise<void> {
-    try {
-      const cepData = await this.studentService.searchCep(cep);
-      if (cepData) {
-        this.formData.address = cepData.logradouro;
-        this.formData.neighborhood = cepData.bairro;
-        this.formData.city = cepData.localidade;
-        this.formData.state = cepData.uf;
-        this.notificationService.showToast('Endereço encontrado automaticamente!', 'success');
-      }
-    } catch (error: any) {
-      // Não mostrar erro para busca automática, apenas para busca manual
-      console.warn('Erro na busca automática de CEP:', error);
-    }
-  }
-
-  saveStudent(): void {
-    if (!this.formData.name || !this.formData.phone || !this.formData.address) {
+  saveStudent(form: NgForm): void {
+    if (form.invalid) {
       this.notificationService.showToast('Preencha todos os campos obrigatórios!', 'error');
       return;
     }
 
     try {
       if (this.isEditing && this.editingStudentId) {
-        const success = this.studentService.updateStudent(this.editingStudentId, this.formData);
-        if (success) {
-          this.notificationService.showToast('Aluno atualizado com sucesso!', 'success');
-        } else {
-          this.notificationService.showToast('Erro ao atualizar aluno!', 'error');
-        }
+        this.studentService.updateStudent(this.editingStudentId, this.formData);
+        this.notificationService.showToast('Aluno atualizado com sucesso!', 'success');
       } else {
         this.studentService.addStudent(this.formData);
         this.notificationService.showToast('Aluno cadastrado com sucesso!', 'success');
       }
-      
-      this.modal?.hide();
-      this.resetForm();
+      this.closeModal();
     } catch (error) {
       this.notificationService.showToast('Erro ao salvar aluno!', 'error');
     }
@@ -198,15 +132,9 @@ export class StudentModalComponent implements OnInit, OnDestroy {
   closeModal(): void {
     this.modal?.hide();
     this.resetForm();
-    this.isEditing = false;
-    this.editingStudentId = null;
   }
 
   getModalTitle(): string {
     return this.isEditing ? 'Editar Aluno' : 'Cadastrar Aluno';
-  }
-
-  getSaveButtonText(): string {
-    return this.isEditing ? 'Salvar Alterações' : 'Salvar Aluno';
   }
 }

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { Student, StudentFormData, CepResponse } from '../models/student.model';
+import { BehaviorSubject } from 'rxjs';
+import { Student, StudentFormData } from '../models/student.model';
 import { StorageService } from './storage.service';
-import { CepService, CepData } from './cep.service';
+import { CepService } from './cep.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +15,6 @@ export class StudentService {
     private storageService: StorageService,
     private cepService: CepService
   ) {
-    // Carregar alunos salvos
     const savedStudents = this.storageService.getStudents();
     this.studentsSubject.next(savedStudents);
   }
@@ -35,29 +34,20 @@ export class StudentService {
       going: true,
       createdAt: new Date().toISOString()
     };
-
     const students = [...this.getStudents(), newStudent];
     this.studentsSubject.next(students);
     this.storageService.saveStudents(students);
-    
     return newStudent;
   }
 
   updateStudent(studentId: number, studentData: Partial<StudentFormData>): boolean {
     const students = this.getStudents();
     const studentIndex = students.findIndex(s => s.id === studentId);
-    
     if (studentIndex === -1) {
       return false;
     }
-
-    students[studentIndex] = {
-      ...students[studentIndex],
-      ...studentData,
-      updatedAt: new Date().toISOString()
-    };
-
-    this.studentsSubject.next(students);
+    students[studentIndex] = { ...students[studentIndex], ...studentData, updatedAt: new Date().toISOString() };
+    this.studentsSubject.next([...students]);
     this.storageService.saveStudents(students);
     return true;
   }
@@ -72,50 +62,18 @@ export class StudentService {
   toggleStudentPresence(studentId: number, going?: boolean): boolean {
     const students = this.getStudents();
     const student = students.find(s => s.id === studentId);
-    
     if (!student) {
       return false;
     }
-
     student.going = going !== undefined ? going : !student.going;
     student.updatedAt = new Date().toISOString();
-    
-    this.studentsSubject.next(students);
+    this.studentsSubject.next([...students]);
     this.storageService.saveStudents(students);
     return true;
   }
 
   getStudentById(studentId: number): Student | null {
     return this.getStudents().find(s => s.id === studentId) || null;
-  }
-
-  async searchCep(cep: string): Promise<CepResponse | null> {
-    try {
-      const cepData = await this.cepService.searchCep(cep);
-      if (!cepData) {
-        return null;
-      }
-
-      // Converter CepData para CepResponse
-      const cepResponse: CepResponse = {
-        cep: cepData.cep,
-        logradouro: cepData.logradouro,
-        complemento: cepData.complemento,
-        bairro: cepData.bairro,
-        localidade: cepData.localidade,
-        uf: cepData.uf,
-        ibge: cepData.ibge,
-        gia: cepData.gia,
-        ddd: cepData.ddd,
-        siafi: cepData.siafi,
-        erro: cepData.erro
-      };
-
-      return cepResponse;
-    } catch (error) {
-      console.error('Erro ao buscar CEP:', error);
-      throw error;
-    }
   }
 
   formatCep(cep: string): string {

@@ -1,4 +1,3 @@
-<!-- Modal de Cadastro de Aluno -->
 <div class="modal fade" id="studentModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -7,113 +6,83 @@
         <button type="button" class="btn-close" (click)="closeModal()"></button>
       </div>
       <div class="modal-body">
-        <form (ngSubmit)="saveStudent(); $event.preventDefault()">
-          <div class="mb-3">
-            <label for="studentName" class="form-label">Nome do Aluno</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="studentName" 
-              [(ngModel)]="formData.name"
-              name="studentName"
-              required>
-          </div>
-          <div class="mb-3">
-            <label for="studentPhone" class="form-label">Telefone</label>
-            <input 
-              type="tel" 
-              class="form-control" 
-              id="studentPhone" 
-              [(ngModel)]="formData.phone"
-              name="studentPhone"
-              required>
-          </div>
-          <div class="mb-3">
-            <label for="studentCep" class="form-label">CEP</label>
-            <div class="input-group">
-              <input 
-                type="text" 
-                class="form-control" 
-                id="studentCep" 
-                [(ngModel)]="formData.cep"
-                name="studentCep"
-                maxlength="9" 
-                (input)="formatCep($event)"
-                required>
-              <button 
-                class="btn btn-outline-secondary" 
-                type="button" 
-                [disabled]="isSearchingCep"
-                (click)="searchCep()">
-                <i [class]="isSearchingCep ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
-              </button>
+        <form #studentForm="ngForm" (ngSubmit)="saveStudent(studentForm)">
+          <fieldset [disabled]="isSearchingCep">
+            <div class="mb-3">
+              <label for="studentName" class="form-label">Nome do Aluno</label>
+              <input type="text" class="form-control" id="studentName" [(ngModel)]="formData.name" name="studentName" required #name="ngModel">
+              <div *ngIf="name.invalid && (name.dirty || name.touched)" class="text-danger">
+                Nome é obrigatório.
+              </div>
             </div>
-          </div>
-          <div class="mb-3">
-            <label for="studentAddress" class="form-label">Endereço</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="studentAddress" 
-              [(ngModel)]="formData.address"
-              name="studentAddress"
-              required>
-          </div>
-          <div class="mb-3">
-            <label for="studentNumber" class="form-label">Número</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="studentNumber" 
-              [(ngModel)]="formData.number"
-              name="studentNumber"
-              required>
-          </div>
-          <div class="mb-3">
-            <label for="studentNeighborhood" class="form-label">Bairro</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="studentNeighborhood" 
-              [(ngModel)]="formData.neighborhood"
-              name="studentNeighborhood"
-              required>
-          </div>
-          <div class="mb-3">
-            <label for="studentCity" class="form-label">Cidade</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="studentCity" 
-              [(ngModel)]="formData.city"
-              name="studentCity"
-              required>
-          </div>
-          <div class="mb-3">
-            <label for="studentState" class="form-label">Estado</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="studentState" 
-              [(ngModel)]="formData.state"
-              name="studentState"
-              required>
-          </div>
-          <div class="mb-3">
-            <label for="studentReturnAddress" class="form-label">Endereço de Volta (Opcional)</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="studentReturnAddress" 
-              [(ngModel)]="formData.returnAddress"
-              name="studentReturnAddress"
-              placeholder="Deixe vazio para usar o mesmo endereço de ida">
-          </div>
+            <div class="mb-3">
+              <label for="studentPhone" class="form-label">Telefone</label>
+              <input type="tel" class="form-control" id="studentPhone" [(ngModel)]="formData.phone" name="studentPhone" required #phone="ngModel">
+              <div *ngIf="phone.invalid && (phone.dirty || phone.touched)" class="text-danger">
+                Telefone é obrigatório.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="studentCep" class="form-label">CEP</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="studentCep" [(ngModel)]="formData.cep" name="studentCep"
+                       maxlength="9" (ngModelChange)="onCepChange($event)" required #cep="ngModel">
+                <span class="input-group-text" *ngIf="isSearchingCep">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </span>
+              </div>
+              <div *ngIf="cep.invalid && (cep.dirty || cep.touched)" class="text-danger">
+                CEP é obrigatório.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="studentAddress" class="form-label">Endereço</label>
+              <input type="text" class="form-control" id="studentAddress" [(ngModel)]="formData.address" name="studentAddress" required #address="ngModel">
+              <div *ngIf="address.invalid && (address.dirty || address.touched)" class="text-danger">
+                Endereço é obrigatório.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="studentNumber" class="form-label">Número</label>
+              <input type="text" class="form-control" id="studentNumber" [(ngModel)]="formData.number" name="studentNumber" required #number="ngModel">
+              <div *ngIf="number.invalid && (number.dirty || number.touched)" class="text-danger">
+                Número é obrigatório.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="studentNeighborhood" class="form-label">Bairro</label>
+              <input type="text" class="form-control" id="studentNeighborhood" [(ngModel)]="formData.neighborhood" name="studentNeighborhood" required #neighborhood="ngModel">
+              <div *ngIf="neighborhood.invalid && (neighborhood.dirty || neighborhood.touched)" class="text-danger">
+                Bairro é obrigatório.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="studentCity" class="form-label">Cidade</label>
+              <input type="text" class="form-control" id="studentCity" [(ngModel)]="formData.city" name="studentCity" required #city="ngModel">
+              <div *ngIf="city.invalid && (city.dirty || city.touched)" class="text-danger">
+                Cidade é obrigatória.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="studentState" class="form-label">Estado</label>
+              <input type="text" class="form-control" id="studentState" [(ngModel)]="formData.state" name="studentState" required #state="ngModel">
+              <div *ngIf="state.invalid && (state.dirty || state.touched)" class="text-danger">
+                Estado é obrigatório.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="studentReturnAddress" class="form-label">Endereço de Volta (Opcional)</label>
+              <input type="text" class="form-control" id="studentReturnAddress" [(ngModel)]="formData.returnAddress" name="studentReturnAddress"
+                     placeholder="Deixe vazio para usar o mesmo endereço de ida">
+            </div>
+          </fieldset>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-        <button type="button" class="btn btn-primary" (click)="saveStudent()">{{ getSaveButtonText() }}</button>
+        <button type="submit" class="btn btn-primary" (click)="saveStudent(studentForm)" [disabled]="studentForm.invalid || isSearchingCep">
+          {{ isEditing ? 'Salvar Alterações' : 'Salvar Aluno' }}
+        </button>
       </div>
     </div>
   </div>

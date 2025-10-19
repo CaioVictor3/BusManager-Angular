@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, switchMap, of, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, tap, catchError } from 'rxjs/operators';
 
 export interface CepData {
   cep: string;
@@ -21,17 +22,28 @@ export interface CepData {
 export class CepService {
   private cepCache = new Map<string, CepData>();
   private loadingSubject = new BehaviorSubject<boolean>(false);
-  private abortController: AbortController | null = null;
-  private searchSubject = new BehaviorSubject<string>('');
+  private searchSubject = new Subject<string>();
   private readonly CACHE_KEY = 'cep_cache';
   private readonly CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas
   private readonly REQUEST_TIMEOUT = 10000; // 10 segundos
 
   public loading$ = this.loadingSubject.asObservable();
+  public searchResult$: Observable<CepData | null>;
 
   constructor() {
     this.loadCacheFromStorage();
-    this.setupDebouncedSearch();
+    this.searchResult$ = this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      tap(() => this.loadingSubject.next(true)),
+      switchMap(cep => this.isValidCep(cep) ? this.fetchCep(cep) : of(null)),
+      tap(() => this.loadingSubject.next(false)),
+      catchError(error => {
+        console.error('Erro na busca de CEP:', error);
+        this.loadingSubject.next(false);
+        return of(null);
+      })
+    );
   }
 
   private loadCacheFromStorage(): void {
@@ -41,7 +53,6 @@ export class CepService {
         const cacheData = JSON.parse(cached);
         const now = Date.now();
         
-        // Limpar entradas expiradas
         Object.entries(cacheData).forEach(([key, value]: [string, any]) => {
           if (now - value.timestamp < this.CACHE_EXPIRY) {
             this.cepCache.set(key, value.data);
@@ -68,122 +79,52 @@ export class CepService {
     }
   }
 
-  private setupDebouncedSearch(): void {
-    this.searchSubject.pipe(
-      debounceTime(500), // Aguarda 500ms após parar de digitar
-      distinctUntilChanged(), // Só executa se o valor mudou
-      switchMap(cep => {
-        if (!cep || cep.length !== 8) {
-          return of(null);
-        }
-        return this.performCepSearch(cep);
-      })
-    ).subscribe();
-  }
-
-  // Método público para busca com debounce
-  searchCepDebounced(cep: string): Observable<CepData | null> {
+  searchCep(cep: string): void {
     const cleanCep = cep.replace(/\D/g, '');
     this.searchSubject.next(cleanCep);
-    
-    return new Observable(observer => {
-      const subscription = this.searchSubject.pipe(
-        debounceTime(500),
-        distinctUntilChanged(),
-        switchMap(cleanCep => {
-          if (!cleanCep || cleanCep.length !== 8) {
-            return of(null);
-          }
-          return this.performCepSearch(cleanCep);
-        })
-      ).subscribe(result => {
-        observer.next(result);
-        observer.complete();
-      });
-
-      return () => subscription.unsubscribe();
-    });
   }
 
-  async searchCep(cep: string): Promise<CepData | null> {
-    const cleanCep = cep.replace(/\D/g, '');
-    
-    if (cleanCep.length !== 8) {
-      throw new Error('CEP deve ter 8 dígitos');
+  private fetchCep(cep: string): Observable<CepData | null> {
+    if (this.cepCache.has(cep)) {
+      return of(this.cepCache.get(cep)!);
     }
 
-    // Verificar cache primeiro
-    if (this.cepCache.has(cleanCep)) {
-      return this.cepCache.get(cleanCep)!;
-    }
-
-    return firstValueFrom(this.performCepSearch(cleanCep)).catch(() => null);
-  }
-
-  private performCepSearch(cleanCep: string): Observable<CepData | null> {
     return new Observable(observer => {
-      // Cancelar requisição anterior se existir
-      if (this.abortController) {
-        this.abortController.abort();
-      }
-
-      this.abortController = new AbortController();
-      this.loadingSubject.next(true);
-
-      // Timeout para a requisição
+      const abortController = new AbortController();
       const timeoutId = setTimeout(() => {
-        this.abortController?.abort();
-        observer.error(new Error('Timeout na busca do CEP'));
+        abortController.abort();
       }, this.REQUEST_TIMEOUT);
 
-      const fetchPromise = fetch(`https://viacep.com.br/ws/${cleanCep}/json/`, {
-        signal: this.abortController.signal,
-        headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
-      });
-
-      fetchPromise
+      fetch(`https://viacep.com.br/ws/${cep}/json/`, { signal: abortController.signal })
         .then(response => {
           clearTimeout(timeoutId);
-          
           if (!response.ok) {
             throw new Error('Erro na requisição');
           }
-          
           return response.json();
         })
-        .then((data: CepData) => {
+        .then(data => {
           if (data.erro) {
-            throw new Error('CEP não encontrado');
+            observer.next(null);
+          } else {
+            this.cepCache.set(cep, data);
+            this.saveCacheToStorage();
+            observer.next(data);
           }
-
-          // Salvar no cache
-          this.cepCache.set(cleanCep, data);
-          this.saveCacheToStorage();
-          
-          observer.next(data);
           observer.complete();
         })
-        .catch((error: any) => {
+        .catch(error => {
           clearTimeout(timeoutId);
-          
-          if (error.name === 'AbortError') {
-            observer.next(null); // Requisição foi cancelada
-            observer.complete();
-          } else {
-            observer.error(error);
+          if (error.name !== 'AbortError') {
+            console.error('Erro ao buscar CEP:', error);
           }
-        })
-        .finally(() => {
-          this.loadingSubject.next(false);
-          this.abortController = null;
+          observer.next(null);
+          observer.complete();
         });
 
       return () => {
         clearTimeout(timeoutId);
-        this.abortController?.abort();
+        abortController.abort();
       };
     });
   }
@@ -197,15 +138,13 @@ export class CepService {
     return this.cepCache.size;
   }
 
-  // Método para validar CEP antes de fazer requisição
   isValidCep(cep: string): boolean {
-    const cleanCep = cep.replace(/\D/g, '');
-    return cleanCep.length === 8 && /^\d{8}$/.test(cleanCep);
+    return /^\d{8}$/.test(cep);
   }
 
-  // Método para formatar CEP
   formatCep(cep: string): string {
     const cleanCep = cep.replace(/\D/g, '');
-    return cleanCep.replace(/(\d{5})(\d)/, '$1-$2');
+    if (cleanCep.length !== 8) return cep;
+    return cleanCep.replace(/(\d{5})(\d{3})/, '$1-$2');
   }
 }
