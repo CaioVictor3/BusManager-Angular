@@ -8,9 +8,9 @@ Sistema web mobile-first para gerenciamento de rotas de transporte de alunos por
 - Cadastro completo de alunos com validação de CEP
 - Controle de presença dos alunos
 - Configuração de ponto de partida e chegada
-- Cálculo de rota otimizada usando Google Maps API
+- Cálculo de rota otimizada usando OpenStreetMap (OSM)
 - Visualização da rota no mapa
-- Navegação via Google Maps
+- Navegação via OpenStreetMap
 - Persistência local dos dados (localStorage)
 - Interface responsiva e intuitiva
 
@@ -18,33 +18,27 @@ Sistema web mobile-first para gerenciamento de rotas de transporte de alunos por
 
 - HTML5, CSS3, JavaScript ES6+
 - Bootstrap 5, Font Awesome
-- Google Maps JavaScript API
+- OpenStreetMap (OSM) - Nominatim e OSRM
 - ViaCEP API (validação de endereços)
 - LocalStorage (persistência)
 
 ## 🚀 Instalação Rápida
 
 1. Baixe os arquivos para uma pasta local
-2. Configure a API do Google Maps:
-   - Copie `config.example.js` para `config.js`
-   - Edite `config.js` e adicione sua chave da API do Google Maps
-3. Abra o arquivo `index.html` no seu navegador
+2. Execute `npm install` para instalar as dependências
+3. Execute `npm start` para iniciar o servidor de desenvolvimento
+4. Acesse `http://localhost:4200` no seu navegador
 
 ## ⚙️ Configuração
 
-### Google Maps API
+### OpenStreetMap (OSM)
 
-1. Acesse [Google Cloud Console](https://console.cloud.google.com/)
-2. Crie um projeto ou selecione um existente
-3. Ative a API "Maps JavaScript API"
-4. Gere uma chave de API
-5. Copie o arquivo `config.example.js` para `config.js`
-6. Substitua `'YOUR_API_KEY_HERE'` pela sua chave no campo `GOOGLE_MAPS_API_KEY`
+O sistema utiliza OpenStreetMap para todas as funcionalidades de mapas:
+- **Nominatim**: Para geocodificação de endereços
+- **OSRM**: Para cálculo de rotas
+- **OpenRouteService**: Para navegação
 
-```javascript
-// No arquivo config.js
-GOOGLE_MAPS_API_KEY: 'SUA_CHAVE_AQUI',
-```
+Não é necessária configuração adicional, pois utiliza serviços gratuitos e públicos.
 
 ### ViaCEP API
 
@@ -54,11 +48,16 @@ A validação de CEP usa a API gratuita ViaCEP. Não requer configuração adici
 
 ```
 Bus Manager/
-├── index.html
-├── style.css
-├── script.js
-├── config.js
-├── config.example.js
+├── src/
+│   ├── app/
+│   │   ├── components/
+│   │   ├── services/
+│   │   ├── models/
+│   │   └── config/
+│   ├── index.html
+│   └── styles.css
+├── package.json
+├── angular.json
 └── README.md
 ```
 
@@ -82,7 +81,7 @@ Bus Manager/
 
 ## 🚨 Problemas Conhecidos
 
-- Google Maps: Requer chave de API válida
+- OpenStreetMap: Pode ter limitações de uso em requisições muito frequentes
 - ViaCEP: Pode ter limitações de uso
 - LocalStorage: Dados ficam no navegador específico
 

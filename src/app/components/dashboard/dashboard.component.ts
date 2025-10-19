@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { StudentService } from '../../services/student.service';
 import { RouteService } from '../../services/route.service';
 import { NotificationService } from '../../services/notification.service';
+import { OSMIntegrationService } from '../../services/osm-integration.service';
 import { Driver } from '../../models/driver.model';
 import { Student } from '../../models/student.model';
 import { RoutePoint } from '../../models/route.model';
@@ -48,6 +49,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private studentService: StudentService,
     private routeService: RouteService,
     private notificationService: NotificationService,
+    private osmIntegrationService: OSMIntegrationService,
     private router: Router
   ) {}
 
@@ -185,11 +187,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     try {
-      this.notificationService.showToast('Calculando rota...', 'info');
+      this.notificationService.showToast('Calculando rota e abrindo Google Maps...', 'info');
       
+      // Calcular rota
       const routeData = await this.routeService.calculateAndDisplayRoute(goingStudents);
       
-      this.notificationService.showToast('Rota calculada com sucesso! Clique em "Ver Rota" para visualizar.', 'success');
+      // Abrir diretamente o Google Maps com a rota
+      this.osmIntegrationService.startNavigation(routeData);
+      
+      this.notificationService.showToast('Navegação iniciada no Google Maps!', 'success');
     } catch (error: any) {
       console.error('Erro ao calcular rota:', error);
       this.notificationService.showToast(`Erro ao calcular rota: ${error.message}`, 'error');

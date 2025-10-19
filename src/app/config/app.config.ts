@@ -1,8 +1,6 @@
 import { BusManagerConfig } from '../models/config.model';
 
 export const APP_CONFIG: BusManagerConfig = {
-  GOOGLE_MAPS_API_KEY: 'AIzaSyBvOkBwv90wD4qP0qXwR1sT2uV3wX4yZ5a',
-  
   APP: {
     name: 'Bus Manager',
     version: '1.0.0',
@@ -48,11 +46,3 @@ export const APP_CONFIG: BusManagerConfig = {
   }
 };
 
-export function getGoogleMapsApiKey(): string {
-  return APP_CONFIG.GOOGLE_MAPS_API_KEY;
-}
-
-export function isGoogleMapsConfigured(): boolean {
-  return APP_CONFIG.GOOGLE_MAPS_API_KEY !== 'YOUR_API_KEY_HERE' && 
-         APP_CONFIG.GOOGLE_MAPS_API_KEY.length > 0;
-}

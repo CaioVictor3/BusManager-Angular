@@ -43,7 +43,6 @@ export interface OSMConfig {
 }
 
 export interface BusManagerConfig {
-  GOOGLE_MAPS_API_KEY: string;
   APP: AppConfig;
   VALIDATION: ValidationConfig;
   ROUTE: RouteConfig;

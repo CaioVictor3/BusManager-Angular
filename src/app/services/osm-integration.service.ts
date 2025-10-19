@@ -236,17 +236,29 @@ export class OSMIntegrationService {
   startNavigation(routeData: RouteData): void {
     try {
       if (routeData && routeData.points && routeData.points.length > 0) {
-        const allAddresses = routeData.points.map(point => 
-          `${point.address}, ${point.number}, ${point.city}`
-        );
+        // Usar Google Maps para navegação direta
+        const coordinates = routeData.points
+          .filter(point => point.coordinates && point.coordinates.lat && point.coordinates.lng)
+          .map(point => `${point.coordinates.lng},${point.coordinates.lat}`)
+          .join(';');
         
-        if (allAddresses.length > 0) {
-          const encodedAddresses = allAddresses.map(addr => encodeURIComponent(addr));
-          const mapsUrl = `https://www.google.com/maps/dir/${encodedAddresses.join('/')}`;
-          
-          window.open(mapsUrl, '_blank');
+        if (coordinates) {
+          // Usar Google Maps para navegação direta com coordenadas
+          const googleMapsUrl = `https://www.google.com/maps/dir/${coordinates}`;
+          window.open(googleMapsUrl, '_blank');
         } else {
-          throw new Error('Nenhum endereço válido encontrado na rota');
+          // Fallback: usar endereços no Google Maps
+          const allAddresses = routeData.points.map(point => 
+            `${point.address}, ${point.number}, ${point.city}`
+          );
+          
+          if (allAddresses.length > 0) {
+            const encodedAddresses = allAddresses.map(addr => encodeURIComponent(addr));
+            const googleMapsUrl = `https://www.google.com/maps/dir/${encodedAddresses.join('/')}`;
+            window.open(googleMapsUrl, '_blank');
+          } else {
+            throw new Error('Nenhum endereço válido encontrado na rota');
+          }
         }
       } else {
         throw new Error('Nenhuma rota disponível para navegação');
